@@ -301,7 +301,8 @@ def create_more_constraints_ILP(alloc: AllocationBuilder, alloc_X: np.ndarray, a
             constraints.append(constraint7)
 
             # Constraint 8 - inequality (8) in the paper.
-            constraint8 = allocation_variables[i][j] + delta[i][j] >= Z_bar[i][j] * (items_capacities[j] + 1)
+            constraint8 = allocation_variables[i][j] + delta[i][j] >= -items_capacities[j] + Z_bar[i][j] * (
+                        2 * items_capacities[j] + 1)
             constraints.append(constraint8)
     # Add constraint for each agent that at least one item must change: inequality (9) in the paper.
 
@@ -399,9 +400,9 @@ def instance_4_3():
     agent_capacities = {"Ami": 6, "Tami": 6, "Rami": 6, "Yumi": 6}
     item_capacities = {"Fork": 3, "Knife": 3, "Pen": 3}
     valuations = {
-        "Ami": {"Fork": 2, "Knife": 0, "Pen": 0}, 
+        "Ami": {"Fork": 2, "Knife": 0, "Pen": 0},
         "Rami": {"Fork": 0, "Knife": 1, "Pen": 1},
-        "Tami": {"Fork": 0, "Knife": 1, "Pen": 1}, 
+        "Tami": {"Fork": 0, "Knife": 1, "Pen": 1},
         "Yumi": {"Fork": 4, "Knife": 5, "Pen": 6}}
     return Instance(agent_capacities=agent_capacities, item_capacities=item_capacities, valuations=valuations)
 
@@ -410,9 +411,9 @@ def instance_4_6():
     agent_capacities = {'s1': 6, 's2': 6, 's3': 6, 's4': 6}
     item_capacities = {'c1': 5, 'c2': 6, 'c3': 2, 'c4': 3, 'c5': 5, 'c6': 2}
     valuations = {
-         's1': {'c1': 152, 'c2': 86, 'c3': 262, 'c4': 68, 'c5': 263, 'c6': 169}, 
-         's2': {'c1': 124, 'c2': 70, 'c3': 98, 'c4': 244, 'c5': 329, 'c6': 135}, 
-         's3': {'c1': 170, 'c2': 235, 'c3': 295, 'c4': 91, 'c5': 91, 'c6': 118}, 
+         's1': {'c1': 152, 'c2': 86, 'c3': 262, 'c4': 68, 'c5': 263, 'c6': 169},
+         's2': {'c1': 124, 'c2': 70, 'c3': 98, 'c4': 244, 'c5': 329, 'c6': 135},
+         's3': {'c1': 170, 'c2': 235, 'c3': 295, 'c4': 91, 'c5': 91, 'c6': 118},
          's4': {'c1': 158, 'c2': 56, 'c3': 134, 'c4': 255, 'c5': 192, 'c6': 205}}
     return Instance(agent_capacities=agent_capacities, item_capacities=item_capacities, valuations=valuations)
 
@@ -437,15 +438,16 @@ if __name__ == "__main__":
 
     logger.setLevel(logging.DEBUG)
 
+
     # instance = Instance.random_uniform(
-    #     num_of_agents=4, num_of_items=6, 
+    #     num_of_agents=4, num_of_items=6,
     #     agent_capacity_bounds=(6,6), item_capacity_bounds=(2,6),
     #     item_base_value_bounds=(50,150),
     #     item_subjective_ratio_bounds=(0.5,1.5),
     #     normalized_sum_of_values=1000,
     #     random_seed=1)
     # print(instance)
-    divide(high_multiplicity_fair_allocation, instance2_4_6())
+    divide(high_multiplicity_fair_allocation, instance_4_6())
 
 
     # alloc = AllocationBuilder(instance)

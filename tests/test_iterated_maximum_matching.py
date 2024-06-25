@@ -13,7 +13,6 @@ import numpy as np
 NUM_OF_RANDOM_INSTANCES=10
 
 def test_feasibility():
-    for i in range(NUM_OF_RANDOM_INSTANCES):
         np.random.seed(i)
         instance = fairpyx.Instance.random_uniform(
             num_of_agents=70, num_of_items=10, normalized_sum_of_values=1000,

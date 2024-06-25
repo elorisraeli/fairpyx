@@ -149,7 +149,7 @@ def course_allocation_with_random_instance_sample(
     return evaluate_algorithm_on_instance(algorithm, instance)
 
 def run_ariel_experiment():
-    # Run on Ariel sample data:
+    # Run on Ariel sample data:z
     experiment = experiments_csv.Experiment("results/", "course_allocation_ariel.csv", backup_folder="results/backup/")
     input_ranges = {
         "max_total_agent_capacity": [1000, 1115, 1500, 2000], # in reality: 1115

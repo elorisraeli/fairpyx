@@ -70,7 +70,6 @@ def plot_course_allocation_results_uniform():
 plot_course_allocation_results_szws()
 
 
-
 ######## OLD PLOTS
 
 
