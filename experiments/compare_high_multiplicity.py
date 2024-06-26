@@ -5,7 +5,8 @@ Programmer: Naor Ladani & Elor Israeli
 Since: 2024-06
 """
 import experiments_csv
-
+import pandas as pd
+import matplotlib.pyplot as plt
 from fairpyx import divide, AgentBundleValueMatrix, Instance
 import fairpyx.algorithms.high_multiplicity_fair_allocation as high
 import json
@@ -96,7 +97,7 @@ def course_allocation_with_random_instance_sample(
 
 def run_naor_experiment():
     # Run on Ariel sample data:z
-    experiment = experiments_csv.Experiment("results/", "course_allocation_naorl.csv", backup_folder="results/backup/")
+    experiment = experiments_csv.Experiment("results/", "course_allocation_naor.csv", backup_folder="results/backup/")
     input_ranges = {
         "max_total_agent_capacity": [12],  # in reality: 1115
         "algorithm": algorithms,
@@ -105,12 +106,58 @@ def run_naor_experiment():
     experiment.run_with_time_limit(course_allocation_with_random_instance_sample, input_ranges, time_limit=TIME_LIMIT)
 
 
+def create_plot_naor_experiment():
+    # קריאת הנתונים מקובץ CSV
+    csv_file = 'results/course_allocation_naor.csv'  # החלף בשם הקובץ שלך
+    data = pd.read_csv(csv_file)
+
+    # הצגת כמה שורות ראשונות של הנתונים כדי להבין את המבנה שלהם
+    print(data.head())
+
+    # יצירת גרף. בדוגמה זו, נניח שיש שני עמודות בשם 'x' ו-'y'
+    plt.figure(figsize=(10, 6))
+    plt.plot(data['utilitarian_value'], marker='o', linestyle='-', label='utilitarian_value')
+    plt.plot(data['egalitarian_value'], marker='o', linestyle='-', label='egalitarian_value')
+    plt.plot(data['runtime'], marker='o', linestyle='-', label='runtime')
+    # הוספת כותרות לגרף
+    plt.title('Algorithm Compare')
+    plt.xlabel('High Multiplicity')
+    plt.legend()
+
+    # שמירת התמונה
+    plt.savefig('results/naor_and_elor_plot.png')
+
+
+def create_plot_uniform():
+    # קריאת הנתונים מקובץ CSV
+    csv_file = 'results/high_multi.csv'  # החלף בשם הקובץ שלך
+    data = pd.read_csv(csv_file)
+
+    # הצגת כמה שורות ראשונות של הנתונים כדי להבין את המבנה שלהם
+    print(data.head())
+
+    # יצירת גרף. בדוגמה זו, נניח שיש שני עמודות בשם 'x' ו-'y'
+    plt.figure(figsize=(10, 6))
+    plt.plot(data['utilitarian_value'], marker='o', linestyle='-', label='utilitarian_value')
+    plt.plot(data['egalitarian_value'], marker='o', linestyle='-', label='egalitarian_value')
+    plt.plot(data['runtime'], marker='o', linestyle='-', label='runtime')
+
+    # הוספת כותרות לגרף
+    plt.title('Algorithm Compare')
+    plt.xlabel('High Multiplicity')
+    plt.legend()
+
+    # שמירת התמונה
+    plt.savefig('results/high_multiplicity_uniforn_plot.png')
+
+
 ######### MAIN PROGRAM ##########
 
 
 if __name__ == "__main__":
     import logging
-
     logging.basicConfig(level=logging.INFO)
     # run_naor_experiment()
-    run_uniform_experiment()
+    # run_uniform_experiment()
+    create_plot_naor_experiment()
+    create_plot_uniform()

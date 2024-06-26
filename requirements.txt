@@ -1,6 +1,6 @@
 numpy>=1.21.3,<2.0.0
 scipy>=1.6.1
-networkz
+networkz~=1.0.6
 cvxpy_base>=1.1.17
 # cmake
 # matplotlib
@@ -10,3 +10,11 @@ cvxpy_base>=1.1.17
 # prtpy>=0.7.0
 # more_itertools
 # scs
+
+cppyy~=3.1.2
+eefpy~=0.1.4
+setuptools~=49.2.1
+pytest~=8.2.2
+cvxpy~=1.5.2
+matplotlib~=3.9.0
+pandas~=2.2.2
