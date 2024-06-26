@@ -9,16 +9,20 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from fairpyx import divide, AgentBundleValueMatrix, Instance
 import fairpyx.algorithms.high_multiplicity_fair_allocation as high
+import fairpyx.algorithms.improved_high_multiplicity as imp
+
 import json
 from typing import *
 import numpy as np
 
-max_value = 60
-normalized_sum_of_values = 60
+max_value = 100
+normalized_sum_of_values = 100
 TIME_LIMIT = 60
 
 # Define the specific algorithm you want to check
-algorithms = [high.high_multiplicity_fair_allocation]
+algorithms = [high.high_multiplicity_fair_allocation,
+              imp.improved_high_multiplicity_fair_allocation
+              ]
 
 
 def evaluate_algorithm_on_instance(algorithm, instance):
@@ -39,8 +43,8 @@ def course_allocation_with_random_instance_uniform(
         value_noise_ratio: float,
         algorithm: Callable,
         random_seed: int):
-    agent_capacity_bounds = [2, 8, 12]
-    item_capacity_bounds = [2, 4, 10]
+    agent_capacity_bounds = [2, 5, 8, 10]
+    item_capacity_bounds = [2, 5, 8, 10]
     np.random.seed(random_seed)
     instance = Instance.random_uniform(
         num_of_agents=num_of_agents, num_of_items=num_of_items,
@@ -61,7 +65,7 @@ def run_uniform_experiment():
         "num_of_items": [2, 3, 5, 6],
         "value_noise_ratio": [0, 0.5, 1.5],
         "algorithm": algorithms,
-        "random_seed": range(3),
+        "random_seed": range(5),
     }
     experiment.run_with_time_limit(course_allocation_with_random_instance_uniform, input_ranges, time_limit=TIME_LIMIT)
 
@@ -113,17 +117,35 @@ def create_plot_naor_experiment():
 
     # הצגת כמה שורות ראשונות של הנתונים כדי להבין את המבנה שלהם
     print(data.head())
+    # הפרדה לפי האלגוריתם
+    algorithms_for_plot = data['algorithm'].unique()
 
-    # יצירת גרף. בדוגמה זו, נניח שיש שני עמודות בשם 'x' ו-'y'
-    plt.figure(figsize=(10, 6))
-    plt.plot(data['utilitarian_value'], marker='o', linestyle='-', label='utilitarian_value')
-    plt.plot(data['egalitarian_value'], marker='o', linestyle='-', label='egalitarian_value')
-    plt.plot(data['runtime'], marker='o', linestyle='-', label='runtime')
+    # יצירת גרפים משווים
+    fig, axes = plt.subplots(1, 3, figsize=(21, 6))
+
+    for algorithm in algorithms_for_plot:
+        df_algo = data[data['algorithm'] == algorithm]
+        axes[0].plot(df_algo['utilitarian_value'], marker='o', linestyle='-', label=algorithm)
+        axes[1].plot(df_algo['egalitarian_value'], marker='o', linestyle='-', label=algorithm)
+        axes[2].plot(df_algo['runtime'], marker='o', linestyle='-', label=algorithm)
+
     # הוספת כותרות לגרף
-    plt.title('Algorithm Compare')
-    plt.xlabel('High Multiplicity')
-    plt.legend()
+    axes[0].set_title('Utilitarian Value Comparison')
+    axes[0].set_xlabel('Random Seed')
+    axes[0].set_ylabel('Utilitarian Value')
+    axes[0].legend()
 
+    axes[1].set_title('Egalitarian Value Comparison')
+    axes[1].set_xlabel('Random Seed')
+    axes[1].set_ylabel('Egalitarian Value')
+    axes[1].legend()
+
+    axes[2].set_title('runtime Comparison')
+    axes[2].set_xlabel('Random Seed')
+    axes[2].set_ylabel('runtime')
+    axes[2].legend()
+
+    plt.tight_layout()
     # שמירת התמונה
     plt.savefig('results/naor_and_elor_plot.png')
 
@@ -135,17 +157,35 @@ def create_plot_uniform():
 
     # הצגת כמה שורות ראשונות של הנתונים כדי להבין את המבנה שלהם
     print(data.head())
+    # הפרדה לפי האלגוריתם
+    algorithms_for_plot = data['algorithm'].unique()
 
-    # יצירת גרף. בדוגמה זו, נניח שיש שני עמודות בשם 'x' ו-'y'
-    plt.figure(figsize=(10, 6))
-    plt.plot(data['utilitarian_value'], marker='o', linestyle='-', label='utilitarian_value')
-    plt.plot(data['egalitarian_value'], marker='o', linestyle='-', label='egalitarian_value')
-    plt.plot(data['runtime'], marker='o', linestyle='-', label='runtime')
+    # יצירת גרפים משווים
+    fig, axes = plt.subplots(1, 3, figsize=(21, 6))
+
+    for algorithm in algorithms_for_plot:
+        df_algo = data[data['algorithm'] == algorithm]
+        axes[0].plot(df_algo['utilitarian_value'], marker='o', linestyle='-', label=algorithm)
+        axes[1].plot(df_algo['egalitarian_value'], marker='o', linestyle='-', label=algorithm)
+        axes[2].plot(df_algo['runtime'], marker='o', linestyle='-', label=algorithm)
 
     # הוספת כותרות לגרף
-    plt.title('Algorithm Compare')
-    plt.xlabel('High Multiplicity')
-    plt.legend()
+    axes[0].set_title('Utilitarian Value Comparison')
+    axes[0].set_xlabel('Random Seed')
+    axes[0].set_ylabel('Utilitarian Value')
+    axes[0].legend()
+
+    axes[1].set_title('Egalitarian Value Comparison')
+    axes[1].set_xlabel('Random Seed')
+    axes[1].set_ylabel('Egalitarian Value')
+    axes[1].legend()
+
+    axes[2].set_title('runtime Comparison')
+    axes[2].set_xlabel('Random Seed')
+    axes[2].set_ylabel('runtime')
+    axes[2].legend()
+
+    plt.tight_layout()
 
     # שמירת התמונה
     plt.savefig('results/high_multiplicity_uniforn_plot.png')
@@ -157,7 +197,7 @@ def create_plot_uniform():
 if __name__ == "__main__":
     import logging
     logging.basicConfig(level=logging.INFO)
-    # run_naor_experiment()
-    # run_uniform_experiment()
+    run_naor_experiment()
+   # run_uniform_experiment()
     create_plot_naor_experiment()
-    create_plot_uniform()
+   # create_plot_uniform()
