@@ -4,6 +4,7 @@ Compare the performance of a high_multiplicity_fair_allocation
 Programmer: Naor Ladani & Elor Israeli
 Since: 2024-06
 """
+
 import experiments_csv
 from pandas import read_csv
 import matplotlib.pyplot as plt
@@ -15,6 +16,7 @@ from typing import *
 import numpy as np
 from eefpy import Objective, EnvyNotion
 from eefpy import solve as solve
+from experiments_csv import single_plot_results, multi_plot_results
 
 max_value = 1000
 normalized_sum_of_values = 100
@@ -25,9 +27,8 @@ algorithms_plot = [
     "solve",
     "improved_high_multiplicity_fair_allocation",
     "second_improved_high_multiplicity_fair_allocation"
-
-
 ]
+
 # Define the specific algorithm you want to check
 algorithms = [
     high.high_multiplicity_fair_allocation,
@@ -36,23 +37,15 @@ algorithms = [
     sec.second_improved_high_multiplicity_fair_allocation
 ]
 
-
 ######### EXPERIMENT WITH UNIFORMLY-RANDOM DATA ##########
 
-
 def evaluate_algorithm_on_instance(algorithm, instance):
-
     if algorithm is solve:
-        agent_valuations = [[int(instance.agent_item_value(agent, item)) for item in instance.items] for agent in
-                            instance.agents]
+        agent_valuations = [[int(instance.agent_item_value(agent, item)) for item in instance.items] for agent in instance.agents]
         print(f' agent valuations:  {agent_valuations}')
         items = [instance.item_capacity(item) for item in instance.items]
 
-        alloc = solve(num_agents=instance.num_of_agents
-                      , num_types=instance.num_of_items
-                      , agent_utils=agent_valuations,
-                      items=items,
-                      envy=EnvyNotion.EF, obj=Objective.NONE)
+        alloc = solve(num_agents=instance.num_of_agents, num_types=instance.num_of_items, agent_utils=agent_valuations, items=items, envy=EnvyNotion.EF, obj=Objective.NONE)
         allocation = {}
         for i, agent in enumerate(instance.agents):
             allocation[agent] = []
@@ -62,7 +55,6 @@ def evaluate_algorithm_on_instance(algorithm, instance):
                 else:
                     for sum in range(alloc[i][j]):
                         allocation[agent].append(item)
-
     else:
         allocation = divide(algorithm, instance)
     matrix = AgentBundleValueMatrix(instance, allocation)
@@ -70,9 +62,7 @@ def evaluate_algorithm_on_instance(algorithm, instance):
     return {
         "utilitarian_value": matrix.utilitarian_value(),
         "egalitarian_value": matrix.egalitarian_value(),
-
     }
-
 
 def course_allocation_with_random_instance_uniform(
         num_of_agents: int, num_of_items: int,
@@ -92,7 +82,6 @@ def course_allocation_with_random_instance_uniform(
     )
     return evaluate_algorithm_on_instance(algorithm, instance)
 
-
 def run_uniform_experiment():
     # Run on uniformly-random data:
     experiment = experiments_csv.Experiment("results/", "high_multi.csv", backup_folder="results/backup/")
@@ -105,9 +94,7 @@ def run_uniform_experiment():
     }
     experiment.run_with_time_limit(course_allocation_with_random_instance_uniform, input_ranges, time_limit=TIME_LIMIT)
 
-
 ######### EXPERIMENT WITH DATA SAMPLED FROM naor input DATA ##########
-
 
 import json
 
@@ -115,15 +102,13 @@ filename = "data/naor_input.json"
 with open(filename, "r", encoding="utf-8") as file:
     naor_input = json.load(file)
 
-
 def course_allocation_with_random_instance_sample(
         max_total_agent_capacity: int,
         algorithm: Callable,
-        random_seed: int, ):
+        random_seed: int):
     np.random.seed(random_seed)
 
-    (agent_capacities, item_capacities, valuations) = \
-        (naor_input["agent_capacities"], naor_input["item_capacities"], naor_input["valuations"])
+    (agent_capacities, item_capacities, valuations) = (naor_input["agent_capacities"], naor_input["item_capacities"], naor_input["valuations"])
     instance = Instance.random_sample(
         max_num_of_agents=max_total_agent_capacity,
         max_total_agent_capacity=max_total_agent_capacity,
@@ -131,13 +116,12 @@ def course_allocation_with_random_instance_sample(
         prototype_agent_capacities=agent_capacities,
         prototype_valuations=valuations,
         item_capacities=item_capacities,
-        item_conflicts=[])
-
+        item_conflicts=[]
+    )
     return evaluate_algorithm_on_instance(algorithm, instance)
 
-
 def run_naor_experiment():
-    # Run on Ariel sample data:z
+    # Run on Ariel sample data:
     experiment = experiments_csv.Experiment("results/", "course_allocation_naor.csv", backup_folder="results/backup/")
     input_ranges = {
         "max_total_agent_capacity": [12],  # in reality: 1115
@@ -146,78 +130,28 @@ def run_naor_experiment():
     }
     experiment.run_with_time_limit(course_allocation_with_random_instance_sample, input_ranges, time_limit=TIME_LIMIT)
 
-
 def create_plot_naor_experiment():
     csv_file = 'results/course_allocation_naor.csv'
-    data = read_csv(csv_file)
-
-    print(data.head())
-    algorithms_for_plot = data['algorithm'].unique()
-
-    fig, axes = plt.subplots(1, 3, figsize=(21, 6))
-
-    for algorithm_p in algorithms_for_plot:
-        df_algo = data[data['algorithm'] == algorithm_p]
-        axes[0].plot(df_algo['utilitarian_value'], marker='o', linestyle='-', label=algorithm_p)
-        axes[1].plot(df_algo['egalitarian_value'], marker='o', linestyle='-', label=algorithm_p)
-        axes[2].plot(df_algo['runtime'], marker='o', linestyle='-', label=algorithm_p)
-
-    axes[0].set_title('Utilitarian Value Comparison')
-    axes[0].set_xlabel('')
-    axes[0].set_ylabel('Utilitarian Value')
-    axes[0].legend()
-
-    axes[1].set_title('Egalitarian Value Comparison')
-    axes[1].set_xlabel('')
-    axes[1].set_ylabel('Egalitarian Value')
-    axes[1].legend()
-
-    axes[2].set_title('runtime Comparison')
-    axes[2].set_xlabel('')
-    axes[2].set_ylabel('runtime')
-    axes[2].legend()
-
-    plt.tight_layout()
-    plt.savefig('results/naor_and_elor_plot.png')
-
+    filter_dict = {}
+    x_field = 'algorithm'
+    y_fields = ['utilitarian_value', 'egalitarian_value', 'runtime']
+    subplot_field = 'algorithm'
+    single_plot_results(csv_file, filter_dict, x_field, y_fields[0], subplot_field, mean=True, save_to_file='results/naor_utilitarian_value_plot.png')
+    single_plot_results(csv_file, filter_dict, x_field, y_fields[1], subplot_field, mean=True, save_to_file='results/naor_egalitarian_value_plot.png')
+    single_plot_results(csv_file, filter_dict, x_field, y_fields[2], subplot_field, mean=True, save_to_file='results/naor_runtime_plot.png')
 
 def create_plot_uniform():
     csv_file = 'results/high_multi.csv'
-    data = read_csv(csv_file)
+    filter_dict = {'algorithm': 'high_multiplicity_fair_allocation', 'random_seed': 0}
+    x_field = 'value_noise_ratio'
+    y_fields = ['utilitarian_value', 'egalitarian_value', 'runtime']
+    subplot_field = 'num_of_items'  # Ensure this matches your CSV column name
 
-    print(data.head())
-    algorithms_for_plot = data['algorithm'].unique()
-
-    fig, axes = plt.subplots(1, 3, figsize=(21, 6))
-
-    for algorithm_p in algorithms_for_plot:
-        df_algo = data[data['algorithm'] == algorithm_p]
-        axes[0].plot(df_algo['num_of_agents'], df_algo['utilitarian_value'], marker='o', linestyle='-', label=algorithm_p)
-        axes[1].plot(df_algo['num_of_agents'], df_algo['egalitarian_value'], marker='o', linestyle='-', label=algorithm_p)
-        axes[2].plot(df_algo['num_of_agents'], df_algo['runtime'], marker='o', linestyle='-', label=algorithm_p)
-
-    axes[0].set_title('Utilitarian Value Comparison')
-    axes[0].set_xlabel('num_of_agents')
-    axes[0].set_ylabel('Utilitarian Value')
-    axes[0].legend()
-
-    axes[1].set_title('Egalitarian Value Comparison')
-    axes[1].set_xlabel('num_of_agents')
-    axes[1].set_ylabel('Egalitarian Value')
-    axes[1].legend()
-
-    axes[2].set_title('runtime Comparison')
-    axes[2].set_xlabel('num_of_agents')
-    axes[2].set_ylabel('runtime')
-    axes[2].legend()
-
-    plt.tight_layout()
-
-    plt.savefig('results/high_multiplicity_uniforn_plot.png')
+    multi_plot_results(csv_file, filter_dict, x_field, y_fields[0], subplot_field=subplot_field, mean=True,
+                       subplot_rows=1, subplot_cols=3, save_to_file='results/high_multiplicity_utilitarian_plot.png')
 
 
 ######### MAIN PROGRAM ##########
-
 
 if __name__ == "__main__":
     import logging
